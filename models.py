@@ -11,7 +11,7 @@ from sklearn.tree import export_graphviz
 from Randomness_Extraction_Processing_Functions import *
 
 # File path
-file_path = '/Users/shreykhater/YQuantumHackathon/AI_2qubits_training_data.txt'
+file_path = '/Users/sid/Code/QRNGclassifier/AI_2qubits_training_data.txt'
 
 
 def readData(file_path):
@@ -39,7 +39,7 @@ def concatenateData(df, num_concats):
 
 
 def processData():
-    df = readData('/Users/shreykhater/YQuantumHackathon/AI_2qubits_training_data.txt')
+    df = readData('/Users/sid/Code/QRNGclassifier/AI_2qubits_training_data.txt')
     new_df = concatenateData(df, 40)
 
     #new_df['spectral_randomness'] = new_df['Concatenated_Data'].apply(classic_spectral_test)

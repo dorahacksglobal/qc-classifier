@@ -6,12 +6,13 @@ from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.model_selection import GridSearchCV
 import zlib
 from pydotplus import graph_from_dot_data
-from IPython.display import Image
+#from IPython.display import Image
 from sklearn.tree import export_graphviz
 from Randomness_Extraction_Processing_Functions import *
+from reprocess_data import squashed_string_df
 
 # File path
-file_path = '/Users/sid/Code/QRNGclassifier/AI_2qubits_training_data.txt'
+file_path = 'AI_2qubits_training_data copy.txt'
 
 
 def readData(file_path):
@@ -23,12 +24,17 @@ def readData(file_path):
                 data.append((binary_number, int(label)))
 
     # Convert the data into a DataFrame
-    return pd.DataFrame(data, columns=['binary_number', 'label'])
+    return pd.DataFrame(data, columns=['Concatenated_Data', 'label'])
 
 
 
 # concatenate optimal number of input rows for highest accuracy (pros and cons)
 def concatenateData(df, num_concats):
+    new_ser = df.groupby((df.index // num_concats)).apply(lambda x: ''.join(x['binary_number'].values))
+    new_df = pd.DataFrame(new_ser)
+    new_df.columns = ['Concatenated_Data', 'label']
+    return new_df
+
     new_df = pd.DataFrame({'Concatenated_Data': [''] * (len(df) // num_concats), 'label': [''] * (len(df) // num_concats)})
 
     # Loop through each group of 10 rows and concatenate their 'Data' strings
@@ -39,8 +45,10 @@ def concatenateData(df, num_concats):
 
 
 def processData():
-    df = readData('/Users/sid/Code/QRNGclassifier/AI_2qubits_training_data.txt')
-    new_df = concatenateData(df, 40)
+    df = readData('AI_2qubits_training_data copy.txt')
+    # new_df = concatenateData(df, 40)
+    new_df = squashed_string_df
+    print(new_df)
 
     #new_df['spectral_randomness'] = new_df['Concatenated_Data'].apply(classic_spectral_test)
     new_df['shannon_entropy'] = new_df['Concatenated_Data'].apply(calculate_2bit_shannon_entropy)
@@ -69,7 +77,7 @@ print(new_df.tail(10))
 
 # Split the data into features (X) and labels (y)
 X = new_df.drop(columns='label').values
-#print(X)
+print(X)
 y = new_df['label'].values
 y=y.astype('int')
 
@@ -96,7 +104,6 @@ def gradient_boosting():
     print("Gradient Boosting Accuracy:", accuracy_gb)
     
     #printing visualization of sample decision tree in gradient booster
-    '''
     dot_data = export_graphviz(
         sub_tree_1,
         out_file=None, filled=True, rounded=True,
@@ -106,7 +113,7 @@ def gradient_boosting():
     graph = graph_from_dot_data(dot_data)
     png = graph.create_png()
     from pathlib import Path
-    Path('./out.png').write_bytes(png)'''
+    Path('./out.png').write_bytes(png)
 
 def gradient_boosting_grid_search():
     gb_model = GradientBoostingClassifier(random_state=42)
@@ -133,3 +140,4 @@ def gradient_boosting_grid_search():
     print("Gradient Boosting Accuracy:", accuracy_gb)
 
 gradient_boosting()
+

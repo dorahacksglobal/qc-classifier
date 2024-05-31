@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
-from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.ensemble import  GradientBoostingClassifier, HistGradientBoostingClassifier
 from sklearn.model_selection import GridSearchCV
 import zlib
 from pydotplus import graph_from_dot_data
@@ -11,8 +11,13 @@ from sklearn.tree import export_graphviz
 from Randomness_Extraction_Processing_Functions import *
 from reprocess_data import squashed_string_df
 
+import joblib
+
+N_CORES = joblib.cpu_count(only_physical_cores=True)
+print(f"Number of physical cores: {N_CORES}")
+
 # File path
-file_path = 'AI_2qubits_training_data copy.txt'
+file_path = 'AI_2qubits_training_data.txt'
 
 
 def readData(file_path):
@@ -45,7 +50,7 @@ def concatenateData(df, num_concats):
 
 
 def processData():
-    df = readData('AI_2qubits_training_data copy.txt')
+    df = readData('AI_2qubits_training_data.txt')
     # new_df = concatenateData(df, 40)
     new_df = squashed_string_df
     print(new_df)
@@ -54,8 +59,13 @@ def processData():
     new_df['shannon_entropy'] = new_df['Concatenated_Data'].apply(calculate_2bit_shannon_entropy)
     new_df['min_entropy'] = new_df['Concatenated_Data'].apply(calculate_min_entropy)
 
+    # reduce precision of estimates to save memory
+    new_df[new_df.select_dtypes(np.float64).columns] = new_df.select_dtypes(np.float64).astype(np.float32)
+
     # Preprocess the binary_number column to convert each bit to a separate feature column
     df_features = pd.DataFrame(new_df['Concatenated_Data'].apply(list).tolist())
+    df_features = df_features.astype(int).astype(bool) # case as bool to save memory
+
     new_df = pd.concat([new_df.drop(columns='Concatenated_Data'), df_features], axis=1)
     return new_df
 
@@ -72,23 +82,24 @@ def processData():
 df['compression_complexity'] = df['binary_number'].apply(compression_complexity)
 '''
 
-new_df = processData()
-print(new_df.tail(10))
+new_df = processData()  # this part can be cached with joblib
+# print(new_df.tail(10))
 
 # Split the data into features (X) and labels (y)
 X = new_df.drop(columns='label').values
-print(X)
+# print(X)
 y = new_df['label'].values
 y=y.astype('int')
 
 # Split the data into training and testing sets
+# TODO: replace with https://scikit-learn.org/dev/modules/generated/sklearn.model_selection.TimeSeriesSplit.html#sklearn.model_selection.TimeSeriesSplit
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
 #print(X_test, y_test)
 
 def gradient_boosting():
     # Create the Gradient Boosting classifier
-    gb_model = GradientBoostingClassifier(random_state=42)
+    gb_model = HistGradientBoostingClassifier(random_state=42) # , categorical_features="from_dtype")  # magnitudes faster than regular gradboost due to heuristics and parallelization
 
     # Train the model
     gb_model.fit(X_train, y_train)
@@ -96,12 +107,15 @@ def gradient_boosting():
     # Make predictions on the test set
     y_pred_gb = gb_model.predict(X_test)
 
-    sub_tree_1 = gb_model.estimators_[1, 0]
+    sub_tree_1 = gb_model._predictors[0][0] # I think this is a tree?
 
     # Calculate the accuracy of the Gradient Boosting model
     accuracy_gb = accuracy_score(y_test, y_pred_gb)
+    # TODO: calculate more performance metrics, since it's a multiclass problem, want to reward the model for making "sort-of-close" predictions
 
     print("Gradient Boosting Accuracy:", accuracy_gb)
+    breakpoint()
+    # the tree visualization method no longer works.
     
     #printing visualization of sample decision tree in gradient booster
     dot_data = export_graphviz(

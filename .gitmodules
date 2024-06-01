@@ -1,0 +1,3 @@
+[submodule "randomness_testsuite"]
+	path = randomness_testsuite
+	url = https://github.com/stevenang/randomness_testsuite

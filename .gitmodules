@@ -1,3 +1,6 @@
 [submodule "randomness_testsuite"]
 	path = randomness_testsuite
 	url = https://github.com/stevenang/randomness_testsuite
+[submodule "spkit"]
+	path = spkit
+	url = https://github.com/Nikeshbajaj/spkit

@@ -1,0 +1,22 @@
+## Changes made
+
+- [x] Use sliding window of 100 bits to generate more training data
+- [x] Compare results against classical PRNGs
+- [x] Exploratory data analysis
+  - [x] Check frequencies of bitstrings and use Mann-Whitney U test to tell distributions apart
+  - [x] Use PCA, tSNE, UMAP to determine clustering of bitstrings and features
+- [x] Add more features
+  - [x] Steve Nang's NIST Library
+  - [x] spkit entropy measures
+- [ ] Make features usable for ML
+  - [x] remove NaNs
+  - [x] remove features with identical values
+  - [x] mean normalize features
+  - [x] avoid test/train leakage
+  - [x] under/oversample
+- [x] Train/test models
+  - [ ] balanced class weights
+  - [ ] k-fold cross validation
+  - [ ] hyperparameter sweep
+- [ ] Generalized quantum circuit
+  - [ ] Qiskit Quantum Volume Circuit

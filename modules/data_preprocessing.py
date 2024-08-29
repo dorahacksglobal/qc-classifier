@@ -86,7 +86,7 @@ def remove_bitstring_as_feature(df: pd.DataFrame):
     return df
 
 
-def apply_individual_qubit_functions(df: pd.DataFrame, functions: list):
+def apply_individual_qubit_functions(df: pd.DataFrame, functions: list, num_qubits: int):
 
     test_functions = {
         'counts': meas_counts_qubit,
@@ -95,7 +95,9 @@ def apply_individual_qubit_functions(df: pd.DataFrame, functions: list):
         'min_entro': min_entropy_qubit,
         'shan_entro': shannon_entropy_qubit,
         'entro_rate': entropy_rate_qubit,
-        'perm_entro': permutation_entropy_qubit
+        'perm_entro': permutation_entropy_qubit,
+        'longest_run': longest_run_qubit,
+        'markov_counts': markov_counts_qubit
     }
 
     for function in functions:
@@ -106,15 +108,23 @@ def apply_individual_qubit_functions(df: pd.DataFrame, functions: list):
         results = []
         for index, row in df.iterrows():
             string = row['Concatenated_Data']
-            res = test_functions[function](string)
+            res = test_functions[function](string, num_qubits)
             results.append(res)
         
-        for qb in range(100):
+        for qb in range(num_qubits):
             qubitRes = [results[i][qb] for i in range(len(results))]
             df[f'{function}_qb_{qb}'] = qubitRes
     
     return df
 
 
-
+def add_PRNG_data(file_path, qubits, numLines):
+    rng = np.random.default_rng()
+    with open(file_path, 'a') as file:
+        for i in range(numLines):
+            prng_data = rng.integers(2, size=qubits)
+            stringPRNG = ''.join([str(i) for i in prng_data])
+            output = stringPRNG + ' non-quantum N/A\n'
+            file.write(output)
+    file.close()
 

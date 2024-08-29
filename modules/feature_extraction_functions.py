@@ -61,6 +61,17 @@ def runs_test(bit_string):
     
     return runs
 
+def longest_run(bit_string):
+    cur = 1
+    longest = 1
+    for i in range(1, len(bit_string)):
+        if bit_string[i] == bit_string[i-1]:
+            cur += 1
+            longest = max(longest, cur)
+        else:
+            cur = 1
+    return longest
+
 def linear_complexity(bit_string, M=500):
     # Perform linear complexity test with block size M
     n = len(bit_string)
@@ -237,3 +248,11 @@ def calculate_min_entropy(sequence):
         return 0
     min_entropy = -np.log2(max_prob)
     return min_entropy
+
+
+def markov_chain_transition_counts(bit_string):
+    count = 0
+    for i in range(1, len(bit_string)):
+        if bit_string[i] != bit_string[i-1]:
+            count += 1
+    return count

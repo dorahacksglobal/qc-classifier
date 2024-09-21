@@ -21,6 +21,7 @@ def sk_learn_gradient_boosting(X_train, y_train, X_test, y_test):
         float: model accuracy
 
     """
+    
     gb_model = GradientBoostingClassifier(n_estimators=50, random_state=42)
 
     print('fitting model')
